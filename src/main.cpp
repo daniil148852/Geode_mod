@@ -3,7 +3,7 @@
 #include <Geode/modify/CCScheduler.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
 #include <Geode/modify/PauseLayer.hpp>
-#include <Geode/ui/GeodeUI.hpp> // Нужно для открытия настроек
+#include <Geode/ui/GeodeUI.hpp> 
 
 using namespace geode::prelude;
 
@@ -60,13 +60,11 @@ class $modify(SpeedScheduler, CCScheduler) {
 
 class $modify(UltraPlayLayer, PlayLayer) {
     
-    // Используем Fields для хранения переменных уровня
-    // Это предотвращает баги при перезапуске
     struct Fields {
-        bool m_isDead = false;          // Флаг, умер ли игрок (чтобы не считать попытки 20 раз)
-        int m_sessionAttempts = 0;      // Счётчик попыток за сессию
-        float m_rainbowHue = 0.0f;      // Для радуги
-        float m_msgTimer = 0.0f;        // Таймер сообщения
+        bool m_isDead = false;          
+        int m_sessionAttempts = 0;      
+        float m_rainbowHue = 0.0f;      
+        float m_msgTimer = 0.0f;        
         
         CCLabelBMFont* m_attemptLabel = nullptr;
         CCLabelBMFont* m_percentLabel = nullptr;
@@ -78,9 +76,8 @@ class $modify(UltraPlayLayer, PlayLayer) {
             return false;
         }
 
-        // Инициализация переменных
         m_fields->m_isDead = false;
-        m_fields->m_sessionAttempts = 1; // Начинаем с 1-й попытки
+        m_fields->m_sessionAttempts = 1; 
         m_fields->m_rainbowHue = 0.0f;
 
         auto winSize = CCDirector::sharedDirector()->getWinSize();
@@ -107,19 +104,18 @@ class $modify(UltraPlayLayer, PlayLayer) {
             this->addChild(m_fields->m_percentLabel);
         }
 
-        // 3. Сообщения о смерти (Скрыто по умолчанию!)
+        // 3. Сообщения о смерти
         if (Mod::get()->getSettingValue<bool>("death-message-enabled")) {
             m_fields->m_deathMsgLabel = CCLabelBMFont::create("", "goldFont.fnt");
             m_fields->m_deathMsgLabel->setScale(0.6f);
             m_fields->m_deathMsgLabel->setPosition({winSize.width / 2.0f, winSize.height / 2.0f + 40.0f});
-            m_fields->m_deathMsgLabel->setOpacity(0); // Скрыто!
-            m_fields->m_deathMsgLabel->setVisible(false); // Точно скрыто!
+            m_fields->m_deathMsgLabel->setOpacity(0); 
+            m_fields->m_deathMsgLabel->setVisible(false); 
             m_fields->m_deathMsgLabel->setZOrder(2000);
             this->addChild(m_fields->m_deathMsgLabel);
         }
 
-        // 4. Кнопка настроек мода (Справа, но не в углу)
-        // Используем спрайт шестеренки (или edit button)
+        // 4. Кнопка настроек
         auto sprite = CCSprite::createWithSpriteFrameName("GJ_optionsBtn_001.png");
         sprite->setScale(0.6f);
         
@@ -131,7 +127,6 @@ class $modify(UltraPlayLayer, PlayLayer) {
         
         auto menu = CCMenu::create();
         menu->addChild(btn);
-        // Позиция: Справа (width - 25), Высота 70% (height * 0.7)
         menu->setPosition({winSize.width - 25.0f, winSize.height * 0.7f});
         menu->setZOrder(9999);
         this->addChild(menu);
@@ -141,14 +136,12 @@ class $modify(UltraPlayLayer, PlayLayer) {
         return true;
     }
 
-    // Обработчик нажатия на кнопку
     void onOpenModSettings(CCObject*) {
         geode::openSettingsPopup(Mod::get());
     }
 
-    // Обновление каждый кадр
     void onUltraUpdate(float dt) {
-        if (!m_fields) return;
+        // УБРАНА ОШИБОЧНАЯ ПРОВЕРКА m_fields
         auto player = this->m_player1;
         if (!player) return;
 
@@ -173,11 +166,15 @@ class $modify(UltraPlayLayer, PlayLayer) {
             if (len > 0) {
                 float pct = (currentX / len) * 100.0f;
                 if (pct < 0) pct = 0; if (pct > 100) pct = 100;
-                m_fields->m_percentLabel->setString(fmt::format("{:.2f}%", pct).c_str());
+                
+                // Используем старый добрый sprintf для безопасности
+                char buf[32];
+                snprintf(buf, sizeof(buf), "%.2f%%", pct);
+                m_fields->m_percentLabel->setString(buf);
             }
         }
         
-        // Таймер исчезновения сообщения
+        // Таймер сообщения
         if (m_fields->m_msgTimer > 0) {
             m_fields->m_msgTimer -= dt;
             if (m_fields->m_msgTimer <= 0) {
@@ -193,29 +190,25 @@ class $modify(UltraPlayLayer, PlayLayer) {
         }
     }
 
-    // ЛОГИКА СМЕРТИ
     void destroyPlayer(PlayerObject* player, GameObject* obj) {
-        // Noclip
         if (Mod::get()->getSettingValue<bool>("noclip-enabled")) {
-            return; // Просто выходим, игрок не умирает
+            return;
         }
 
-        // ПРОВЕРКА: Если уже умер, не считаем снова!
+        // ПРОВЕРКА СМЕРТИ
         if (m_fields->m_isDead) {
             PlayLayer::destroyPlayer(player, obj);
             return;
         }
 
-        // Помечаем, что умерли
         m_fields->m_isDead = true;
-        m_fields->m_sessionAttempts++; // +1 попытка
+        m_fields->m_sessionAttempts++; 
 
-        // Обновляем текст попыток
+        // Обновляем текст попыток (безопасный метод)
         if (m_fields->m_attemptLabel) {
-            m_fields->m_attemptLabel->setString(
-                fmt::format("Att: {}", m_fields->m_sessionAttempts).c_str()
-            );
-            // Анимация увеличения
+            std::string txt = "Att: " + std::to_string(m_fields->m_sessionAttempts);
+            m_fields->m_attemptLabel->setString(txt.c_str());
+            
             m_fields->m_attemptLabel->stopAllActions();
             m_fields->m_attemptLabel->setScale(0.6f);
             m_fields->m_attemptLabel->runAction(CCEaseElasticOut::create(CCScaleTo::create(0.5f, 0.4f), 0.3f));
@@ -228,27 +221,21 @@ class $modify(UltraPlayLayer, PlayLayer) {
             m_fields->m_deathMsgLabel->setOpacity(255);
             m_fields->m_deathMsgLabel->stopAllActions();
             
-            // Анимация "Прыг"
             m_fields->m_deathMsgLabel->setScale(0.0f);
             m_fields->m_deathMsgLabel->runAction(CCEaseBackOut::create(CCScaleTo::create(0.3f, 0.6f)));
             
             m_fields->m_deathMsgLabel->setColor(hsvToRgb(rand() % 360, 0.8f, 1.0f));
             
-            // Таймер до исчезновения
             m_fields->m_msgTimer = 1.5f; 
         }
 
         PlayLayer::destroyPlayer(player, obj);
     }
 
-    // Сброс уровня (рестарт)
     void resetLevel() {
         PlayLayer::resetLevel();
-        
-        // Сбрасываем флаг смерти, чтобы можно было умереть снова
         m_fields->m_isDead = false;
         
-        // Скрываем сообщение сразу
         if (m_fields->m_deathMsgLabel) {
             m_fields->m_deathMsgLabel->stopAllActions();
             m_fields->m_deathMsgLabel->setOpacity(0);
@@ -266,9 +253,9 @@ class $modify(UltraPauseLayer, PauseLayer) {
         PauseLayer::customSetup();
         
         auto winSize = CCDirector::sharedDirector()->getWinSize();
-        auto label = CCLabelBMFont::create("Mod Active", "bigFont.fnt");
+        auto label = CCLabelBMFont::create("UltraHack Active", "bigFont.fnt");
         label->setScale(0.4f);
-        label->setPosition({winSize.width - 40.0f, 40.0f});
+        label->setPosition({winSize.width - 60.0f, 25.0f});
         label->setOpacity(100);
         this->addChild(label);
     }
