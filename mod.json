@@ -1,0 +1,77 @@
+{
+    "geode": "3.4.0",
+    "gd": {
+        "win": "2.206",
+        "android": "2.206"
+    },
+    "id": "ultra.hack-pack",
+    "name": "UltraHack Pack",
+    "version": "v1.0.0",
+    "developer": "UltraDev",
+    "description": "Крутой набор хаков: Rainbow иконка, Noclip, Speedhack, счётчик попыток на экране, кастомное сообщение смерти и trail эффект!",
+    "tags": ["gameplay", "enhancement", "interface", "hack"],
+    "settings": {
+        "noclip-enabled": {
+            "name": "Noclip",
+            "description": "Проходи сквозь объекты!",
+            "type": "bool",
+            "default": false
+        },
+        "rainbow-icon": {
+            "name": "Rainbow Icon",
+            "description": "Радужная иконка игрока",
+            "type": "bool",
+            "default": true
+        },
+        "speedhack-enabled": {
+            "name": "Speedhack",
+            "description": "Изменение скорости игры",
+            "type": "bool",
+            "default": false
+        },
+        "speed-value": {
+            "name": "Speed Value",
+            "description": "Множитель скорости (0.1 - 5.0)",
+            "type": "float",
+            "default": 1.0,
+            "min": 0.1,
+            "max": 5.0
+        },
+        "show-attempts": {
+            "name": "Show Attempts Counter",
+            "description": "Показать счётчик попыток на экране",
+            "type": "bool",
+            "default": true
+        },
+        "death-message-enabled": {
+            "name": "Custom Death Messages",
+            "description": "Весёлые сообщения при смерти",
+            "type": "bool",
+            "default": true
+        },
+        "wave-trail-always": {
+            "name": "Always Show Wave Trail",
+            "description": "Trail всегда виден (даже не в wave режиме)",
+            "type": "bool",
+            "default": false
+        },
+        "practice-music-sync": {
+            "name": "Practice Music Hack",
+            "description": "Музыка не перезапускается в practice mode",
+            "type": "bool",
+            "default": false
+        },
+        "hide-particles": {
+            "name": "Hide Death Particles",
+            "description": "Убрать частицы смерти (для производительности)",
+            "type": "bool",
+            "default": false
+        },
+        "percent-accuracy": {
+            "name": "Accurate Percentage",
+            "description": "Показывать процент с 2 знаками после запятой",
+            "type": "bool",
+            "default": true
+        }
+    }
+}
